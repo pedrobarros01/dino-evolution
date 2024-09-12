@@ -2,21 +2,21 @@ import random
 from chrome_trex import DinoGame
 from genetic_dino_agent import GeneticDinoAgent
 
-def evaluate_agent(agent, game, fps=0):
+def evaluate_agent(agent, game):
     # Reinicia o jogo para cada agente
     game.reset()
     total_score = 0
-
     while not game.game_over:
         # Obtém o estado do jogo
-        game_state = game.get_state()
+        game_state = game.get_state()        
+        game_state = [float(x) for x in game_state]
         
         # O agente decide qual ação tomar com base no estado
         action = agent.get_action(game_state)
+        print(f"Action: {action}, Type: {type(action)}")
         
         # O jogo avança com a ação selecionada
-        game.step(action)
-        
+        game.step(int(action)) 
         # Obtém a pontuação atual do jogo
         total_score = game.get_score()
     
