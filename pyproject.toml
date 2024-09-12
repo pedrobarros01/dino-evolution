@@ -1,13 +1,15 @@
 [tool.poetry]
-name = "python-repository-template"
-version = "0.2.0"
-description = "A Python repository template."
-authors = ["Your Name <you@example.com>"]
+name = "dino-evolution"
+version = "1.0"
+description = "Evolutionary Dinosaur A.I."
+authors = ["Alexandre Magno <alexandre.pinho@aln.senaicimatec.edu.br>", "Pedro Barros <pedro.barros@aln.senaicimatec.edu.br>", "Rafael Luna <rafael.luna@aln.senaicimatec.edu.br>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "~3.9.13"
+python = "^3.10"
+chrome-trex = {git = "https://github.com/turing-usp/chrome-trex-rush", rev = "master"}
+numpy = "^2.1.1"
 
 [tool.poetry.group.dev.dependencies]
 notebook = "^7.1.2"
