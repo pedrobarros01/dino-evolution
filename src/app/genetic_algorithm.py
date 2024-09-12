@@ -1,6 +1,8 @@
 import random
+
 from chrome_trex import DinoGame
 from genetic_dino_agent import GeneticDinoAgent
+
 
 def evaluate_agent(agent, game):
     # Reinicia o jogo para cada agente
@@ -8,19 +10,21 @@ def evaluate_agent(agent, game):
     total_score = 0
     while not game.game_over:
         # Obtém o estado do jogo
-        game_state = game.get_state()        
+        game_state = game.get_state()
+        # print(game_state)
         game_state = [float(x) for x in game_state]
-        
+
         # O agente decide qual ação tomar com base no estado
         action = agent.get_action(game_state)
-        print(f"Action: {action}, Type: {type(action)}")
-        
+        # print(f"Action: {action}, Type: {type(action)}")
+
         # O jogo avança com a ação selecionada
-        game.step(int(action)) 
+        game.step(int(action))
         # Obtém a pontuação atual do jogo
         total_score = game.get_score()
-    
+
     return total_score
+
 
 def genetic_algorithm(generations=10, population_size=20, mutation_rate=0.01):
     # Cria o jogo com FPS ilimitado
@@ -28,7 +32,7 @@ def genetic_algorithm(generations=10, population_size=20, mutation_rate=0.01):
 
     # Cria uma população inicial de agentes
     population = [GeneticDinoAgent() for _ in range(population_size)]
-    
+
     for generation in range(generations):
         # Avalia a pontuação de cada agente
         scores = [(evaluate_agent(agent, game), agent) for agent in population]
@@ -39,7 +43,7 @@ def genetic_algorithm(generations=10, population_size=20, mutation_rate=0.01):
         # Seleciona os 5 melhores agentes para reprodução
         best_agents = [agent for _, agent in scores[:5]]
         new_population = []
-        
+
         # Gera a nova população através de cruzamento e mutação
         for _ in range(population_size):
             parent1, parent2 = random.sample(best_agents, 2)
@@ -52,3 +56,12 @@ def genetic_algorithm(generations=10, population_size=20, mutation_rate=0.01):
     # Avalia o melhor agente ao final
     best_agent = max(population, key=lambda agent: evaluate_agent(agent, game))
     print(f"Best agent's final score: {evaluate_agent(best_agent, game)}")
+    game.close()
+
+
+if __name__ == "__main__":
+    generations = 10
+    population_size = 20
+    mutation_rate = 0.01
+
+    genetic_algorithm(generations, population_size, mutation_rate)

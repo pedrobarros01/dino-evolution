@@ -8,8 +8,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-chrome-trex = {git = "https://github.com/turing-usp/chrome-trex-rush", rev = "master"}
 numpy = "^2.1.1"
+chrome-trex = {git = "https://github.com/ArielMAJ/chrome-trex-rush", rev = "fix/multi-dino-game"}
 
 [tool.poetry.group.dev.dependencies]
 notebook = "^7.1.2"

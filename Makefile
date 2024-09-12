@@ -12,11 +12,11 @@ install: ## Install Python requirements.
 
 .PHONY: run
 run: ## Run the project.
-	poetry run python -m src.app
+	poetry run python src/app/genetic_algorithm.py
 
-.PHONY: run-example-script
-run-example-script: ## Run first example script.
-	poetry run python src/scripts/example_xyz.py
+.PHONY: dino
+dino: ## Run first example script.
+	poetry run python src/app/aoba.py
 
 .PHONY: run-env-var-usage-example-script
 run-env-var-example-script: ## Run environment variables usage example script.
