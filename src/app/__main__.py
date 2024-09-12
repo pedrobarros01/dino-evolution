@@ -1,17 +1,8 @@
-"""
-This is the main entry point of the application.
-
-Import the bare minimum needed and add any initialization code here.
-"""
-
-
-def main():
-    """
-    Main entry point of the application. This is where the application starts.
-    """
-    print("Hello, World!")
-    return 0
-
+from genetic_algorithm import genetic_algorithm
 
 if __name__ == "__main__":
-    SystemExit(main())
+    generations = 10
+    population_size = 20
+    mutation_rate = 0.01
+    
+    genetic_algorithm(generations, population_size, mutation_rate)
