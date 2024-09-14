@@ -4,29 +4,44 @@ from chrome_trex import MultiDinoGame
 from genetic_dino_agent import GeneticDinoAgent
 
 
+def process_game_state(game_state):
+    DY, X1, Y1, H1, X2, Y2, H2, X3, Y3, H3, GS = game_state
+    return [DY, X1, H1, GS]
+
+
+def reward_function(current_score, previous_score, distance):
+    # A recompensa é baseada no aumento de pontuação e na distância percorrida
+    score_increase = current_score - previous_score
+    return score_increase + 0.1 * distance
+
+
 def evaluate_agent(agents, game):
     game.reset()
-    total_score = 0
+    total_scores = [0] * len(agents)
+    previous_scores = [0] * len(agents)
+
     while not game.game_over:
         game_state = game.get_state()[0]
-        game_state = [float(game_state[x]) for x in [0, 1, 2, 3, 10]]
-        actions = []
-        for agent in agents:
-            action = agent.get_action(game_state)
-            actions.append(int(action))
-        game.step(actions)
-    total_score = game.get_scores()
-    agent_with_score = [(score, agent) for score, agent in zip(total_score, agents)]
+        processed_state = process_game_state(game_state)  # Processar o estado
 
+        actions = [agent.get_action(processed_state) for agent in agents]
+        game.step(actions)
+
+        # Atualize a distância percorrida e a pontuação
+        scores = game.get_scores()
+        for i, (score, agent) in enumerate(zip(scores, agents)):
+            distance = game_state[1]  # X1 - Distância do obstáculo mais próximo
+            total_scores[i] += reward_function(score, previous_scores[i], distance)
+            previous_scores[i] = score
+
+    agent_with_score = [(score, agent) for score, agent in zip(total_scores, agents)]
     return agent_with_score
 
 
 def genetic_algorithm(
     generations=1, population_size=30, mutation_rate=0.05, elitism_size=2
 ):
-    game = MultiDinoGame(
-        fps=0, dino_count=population_size
-    )  # FPS ajustado para garantir estabilidade
+    game = MultiDinoGame(fps=0, dino_count=population_size)
 
     population = [
         GeneticDinoAgent(activation_function="leaky_relu")
@@ -56,8 +71,8 @@ def genetic_algorithm(
 
 
 if __name__ == "__main__":
-    generations = 50  # Aumenta o número de gerações para mais aprendizado
-    population_size = 30
+    generations = 100  # Aumenta o número de gerações para mais aprendizado
+    population_size = 50
     mutation_rate = 0.05  # Maior taxa de mutação
     elitism_size = 5
 

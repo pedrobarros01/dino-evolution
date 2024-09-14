@@ -5,12 +5,14 @@ from chrome_trex import ACTION_DOWN, ACTION_FORWARD, ACTION_UP
 
 
 class GeneticDinoAgent:
-    def __init__(self, weights=None, activation_function="relu"):
-        # O tamanho dos pesos deve ser o mesmo do vetor de estado (10x3)
+    def __init__(self, weights=None, activation_function="relu", bias=None):
         self.weights = weights if weights is not None else self.random_weights()
-        self.bias = np.random.uniform(-1, 1, 3).tolist()
+        self.bias = bias if bias is not None else self.random_bias()
         self.activation_function = activation_function
         # print(self.bias)
+
+    def random_bias(self):
+        return np.random.uniform(-1, 1, 3).tolist()
 
     def relu(self, x):
         return np.maximum(0, x)
@@ -32,13 +34,10 @@ class GeneticDinoAgent:
         return np.where(x > 0, x, alpha * (np.exp(x) - 1))
 
     def random_weights(self):
-        # O vetor de estado tem 10 elementos, então precisamos de 10 pesos
         pesos = []
-        for i in range(5):
+        for i in range(4):
             # print(i)
-            peso_aleatorio = np.random.uniform(
-                -1, 1, 3
-            ).tolist()  # Inicialização uniforme entre -1 e 1
+            peso_aleatorio = np.random.uniform(-1, 1, 3).tolist()
             pesos.append(peso_aleatorio)
         return pesos
 
@@ -69,13 +68,15 @@ class GeneticDinoAgent:
         else:
             return ACTION_DOWN
 
-    def mutate(self, mutation_rate=0.05):  # Aumenta a taxa de mutação
+    def mutate(self, mutation_rate=0.05):
         for i in range(len(self.weights)):
             for j in range(len(self.weights[i])):
                 if random.random() < mutation_rate:
-                    self.weights[i][j] += np.random.uniform(
-                        -1, 1
-                    )  # Mutação mais controlada com valores pequenos
+                    self.weights[i][j] += np.random.uniform(-1, 1)
+
+        for i in range(len(self.bias)):
+            if random.random() < mutation_rate:
+                self.bias[i] += np.random.uniform(-1, 1)
 
     @classmethod
     def crossover(cls, parent1, parent2):
@@ -87,4 +88,7 @@ class GeneticDinoAgent:
                 for row1, row2 in zip(parent1.weights, parent2.weights)
             ]
         )
-        return cls(new_weights)
+        new_bias = [
+            random.choice([b1, b2]) for b1, b2 in zip(parent1.bias, parent2.bias)
+        ]
+        return cls(new_weights, parent1.activation_function, new_bias)
