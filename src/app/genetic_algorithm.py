@@ -1,34 +1,42 @@
 import random
 
-from chrome_trex import DinoGame
+from chrome_trex import MultiDinoGame
 from genetic_dino_agent import GeneticDinoAgent
 
 
-def evaluate_agent(agent, game):
+def evaluate_agent(agents, game):
     game.reset()
     total_score = 0
     while not game.game_over:
-        game_state = game.get_state()
-        game_state = [float(x) for x in game_state]
+        game_state = game.get_state()[0]
+        game_state = [float(game_state[x]) for x in [0, 1, 2, 3, 10]]
+        actions = []
+        for agent in agents:
+            action = agent.get_action(game_state)
+            actions.append(int(action))
+        game.step(actions)
+    total_score = game.get_scores()
+    agent_with_score = [(score, agent) for score, agent in zip(total_score, agents)]
 
-        action = agent.get_action(game_state)
-        game.step(int(action))
-        total_score = game.get_score()
-
-    return total_score
+    return agent_with_score
 
 
 def genetic_algorithm(
-    generations=30, population_size=30, mutation_rate=0.05, elitism_size=5
+    generations=1, population_size=30, mutation_rate=0.05, elitism_size=2
 ):
-    game = DinoGame(fps=0)  # FPS ajustado para garantir estabilidade
+    game = MultiDinoGame(
+        fps=0, dino_count=population_size
+    )  # FPS ajustado para garantir estabilidade
 
-    population = [GeneticDinoAgent() for _ in range(population_size)]
+    population = [
+        GeneticDinoAgent(activation_function="leaky_relu")
+        for _ in range(population_size)
+    ]
 
     for generation in range(generations):
-        scores = [(evaluate_agent(agent, game), agent) for agent in population]
+        scores = evaluate_agent(population, game)
         scores.sort(key=lambda x: x[0], reverse=True)
-
+        # print(scores)
         print(f"Generation {generation + 1}: Best Score = {scores[0][0]}")
 
         best_agents = [agent for _, agent in scores[:elitism_size]]
@@ -42,8 +50,8 @@ def genetic_algorithm(
 
         population = new_population
 
-    best_agent = max(population, key=lambda agent: evaluate_agent(agent, game))
-    print(f"Best agent's final score: {evaluate_agent(best_agent, game)}")
+    best_agent = max(scores, key=lambda x: x[0])
+    print(f"Best agent's final score: {best_agent[0]}")
     game.close()
 
 
