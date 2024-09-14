@@ -6,39 +6,53 @@ from chrome_trex import ACTION_DOWN, ACTION_FORWARD, ACTION_UP
 
 class GeneticDinoAgent:
     def __init__(self, weights=None):
-        # O tamanho dos pesos deve ser o mesmo do vetor de estado (10)
+        # O tamanho dos pesos deve ser o mesmo do vetor de estado (10x3)
         self.weights = weights if weights is not None else self.random_weights()
-        self.bias = random.randint(0, 1)
+        self.bias = np.random.uniform(0, 1, 3).tolist()
+        # print(self.bias)
 
     def random_weights(self):
         # O vetor de estado tem 10 elementos, então precisamos de 10 pesos
-        return np.random.randn(10)
+        pesos = []
+        for i in range(11):
+            # print(i)
+            peso_aleatorio = np.random.uniform(
+                0, 1, 3
+            ).tolist()  # Inicialização uniforme entre -1 e 1
+            pesos.append(peso_aleatorio)
+        return pesos
+
+    def relu(self, x):
+        return np.maximum(0, x)
 
     def get_action(self, game_state):
-        # Convertemos o estado do jogo para um array NumPy
-        input_data = np.array(game_state)
+        Z = np.matmul(game_state, self.weights) + self.bias
+        Z = self.relu(Z)  # Substitui sigmoid por ReLU
 
-        # Fazemos o produto escalar entre os pesos e o vetor de estado
-        result = np.dot(self.weights, input_data) + self.bias
-
-        # Usamos o resultado para decidir qual ação tomar
-        if result > 0.5:
-            return ACTION_UP  # Pular
-        elif result < -0.5:
-            return ACTION_DOWN  # Abaixar
+        # Mantém a lógica de decisão de ação
+        if Z[0] > Z[1] and Z[0] > Z[2]:
+            return ACTION_UP
+        elif Z[1] > Z[2]:
+            return ACTION_FORWARD
         else:
-            return ACTION_FORWARD  # Continuar correndo
+            return ACTION_DOWN
 
-    def mutate(self, mutation_rate=0.01):
-        # Aplica mutação nos pesos
+    def mutate(self, mutation_rate=0.05):  # Aumenta a taxa de mutação
         for i in range(len(self.weights)):
-            if random.random() < mutation_rate:
-                self.weights[i] += np.random.randn()
+            for j in range(len(self.weights[i])):
+                if random.random() < mutation_rate:
+                    self.weights[i][j] += np.random.uniform(
+                        -0.5, 0.5
+                    )  # Mutação mais controlada com valores pequenos
 
     @classmethod
     def crossover(cls, parent1, parent2):
-        # Faz cruzamento dos pesos de dois pais
         new_weights = np.array(
-            [(w1 + w2) / 2 for w1, w2 in zip(parent1.weights, parent2.weights)]
+            [
+                [
+                    random.choice([w1, w2]) for w1, w2 in zip(row1, row2)
+                ]  # Crossover uniforme
+                for row1, row2 in zip(parent1.weights, parent2.weights)
+            ]
         )
         return cls(new_weights)
