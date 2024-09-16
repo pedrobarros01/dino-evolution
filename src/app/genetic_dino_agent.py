@@ -1,7 +1,6 @@
 import random
 
 import numpy as np
-from chrome_trex import ACTION_DOWN, ACTION_FORWARD, ACTION_UP
 
 
 class GeneticDinoAgent:
@@ -35,7 +34,7 @@ class GeneticDinoAgent:
 
     def random_weights(self):
         pesos = []
-        for i in range(4):
+        for i in range(5):
             # print(i)
             peso_aleatorio = np.random.uniform(-1, 1, 3).tolist()
             pesos.append(peso_aleatorio)
@@ -60,13 +59,8 @@ class GeneticDinoAgent:
     def get_action(self, game_state):
         Z = np.matmul(game_state, self.weights) + self.bias
         Z = self.activate(Z)
-
-        if Z[0] > Z[1] and Z[0] > Z[2]:
-            return ACTION_FORWARD
-        elif Z[1] > Z[2]:
-            return ACTION_UP
-        else:
-            return ACTION_DOWN
+        lista = Z.tolist()
+        return lista.index(max(lista))
 
     def mutate(self, mutation_rate=0.05):
         for i in range(len(self.weights)):
@@ -79,7 +73,7 @@ class GeneticDinoAgent:
                 self.bias[i] += np.random.uniform(-1, 1)
 
     @classmethod
-    def crossover(cls, parent1, parent2):
+    def crossover_uniforme(cls, parent1, parent2):
         new_weights = np.array(
             [
                 [
@@ -92,3 +86,32 @@ class GeneticDinoAgent:
             random.choice([b1, b2]) for b1, b2 in zip(parent1.bias, parent2.bias)
         ]
         return cls(new_weights, parent1.activation_function, new_bias)
+
+    @classmethod
+    def crossover_unico(cls, parent1, parent2):
+        point = random.randint(0, len(parent1.weights) - 1)
+        new_weights = np.array(
+            [
+                row1 if i < point else row2
+                for i, (row1, row2) in enumerate(zip(parent1.weights, parent2.weights))
+            ]
+        )
+        new_bias = parent1.bias[:point] + parent2.bias[point:]
+        return cls(new_weights, parent1.activation_function, new_bias)
+
+    @classmethod
+    def crossover_blend(cls, parent1, parent2, alpha=0.5):
+        new_weights = np.array(
+            [
+                [(alpha * w1 + (1 - alpha) * w2) for w1, w2 in zip(row1, row2)]
+                for row1, row2 in zip(parent1.weights, parent2.weights)
+            ]
+        )
+        new_bias = [
+            (alpha * b1 + (1 - alpha) * b2)
+            for b1, b2 in zip(parent1.bias, parent2.bias)
+        ]
+        return cls(new_weights, parent1.activation_function, new_bias)
+
+    def clone(self):
+        return GeneticDinoAgent(self.weights, self.activation_function, self.bias)
