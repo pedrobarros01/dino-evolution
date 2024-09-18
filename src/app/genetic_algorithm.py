@@ -16,9 +16,9 @@ def process_game_state(game_state):
     X1, Y1, H1 is the first obstacle's X, Y positions and height;
     GS is the game speed.
     """
-    DY, X1, Y1, H1, X2, Y2, H2, X3, Y3, H3, GS = game_state
+    DY, H, W, GS, D= game_state
 
-    return [DY, X1, GS, Y3, X3]
+    return [DY, H, W, GS, D]
 
 
 def reward_function(current_score, previous_score, state):
@@ -33,13 +33,9 @@ def reward_function(current_score, previous_score, state):
 
 def evaluate_agent(agents, game):
     game.reset()
-    total_scores_real = [0] * len(agents)
-    total_scores = [0] * len(agents)
-    previous_scores = [0] * len(agents)
 
     while not game.game_over:
-        game_state = game.get_state()
-
+        game_state = game.get_state_2()
         actions = [
             agent.get_action(process_game_state(game_state[i]))
             for i, agent in enumerate(agents)
@@ -48,19 +44,38 @@ def evaluate_agent(agents, game):
 
         # Update distance traveled and score
         scores = game.get_scores()
-        total_scores_real = game.get_scores()
-        for i, (score, agent) in enumerate(zip(scores, agents)):
-            total_scores[i] += reward_function(
-                score, previous_scores[i], process_game_state(game_state[i])
-            )
-            previous_scores[i] = score
+
 
     agent_with_score = [
-        (score, agent, score_real)
-        for score, agent, score_real in zip(total_scores, agents, total_scores_real)
+        (score, agent)
+        for score, agent in zip(scores, agents)
     ]
+
     return agent_with_score
 
+def tournament_selection(agents_with_scores, tournament_size=3):
+    """
+    Seleção por torneio. Seleciona um grupo aleatório de agentes (tamanho definido pelo parâmetro `tournament_size`)
+    e retorna o agente com a maior pontuação no grupo.
+    """
+    tournament_contestants = random.sample(agents_with_scores, tournament_size)
+    best_agent = max(tournament_contestants, key=lambda x: x[0])  # Seleciona o agente com maior score
+    return best_agent[1]  # Retorna o agente
+
+
+def roulette_wheel_selection(agents_with_scores):
+    """
+    Seleção por roleta. A probabilidade de um agente ser selecionado
+    é proporcional à sua pontuação.
+    """
+    total_score = sum(score for score, _ in agents_with_scores)
+    selection_probs = [score / total_score for score, _ in agents_with_scores]
+    
+    return random.choices(
+        [agent for _, agent in agents_with_scores], 
+        weights=selection_probs, 
+        k=1
+    )[0]
 
 def genetic_algorithm(
     generations=1, population_size=30, mutation_rate=0.05, elitism_size=2
@@ -68,7 +83,7 @@ def genetic_algorithm(
     game = MultiDinoGame(fps=0, dino_count=population_size)
 
     population = [
-        GeneticDinoAgent(activation_function="leaky_relu")
+        GeneticDinoAgent(activation_function="sigmoid")
         for _ in range(population_size)
     ]
 
@@ -82,7 +97,7 @@ def genetic_algorithm(
         scores.sort(key=lambda x: x[0], reverse=True)
 
         # Capture the best agent in this generation
-        best_generation_score = scores[0][2]
+        best_generation_score = scores[0][0]
         best_generation_agent = scores[0][1]
 
         # Update the global best agent if necessary
@@ -93,12 +108,14 @@ def genetic_algorithm(
         print(f"Generation {generation + 1}: Best Score = {best_generation_score}")
 
         # Selection for the next generation
-        best_agents = [agent for _, agent, q in scores[:elitism_size]]
+        best_agents = [agent for _, agent in scores[:elitism_size]]
         new_population = best_agents.copy()
+        new_population.append(best_global_agent)
 
         while len(new_population) < population_size:
-            parent1, parent2 = random.sample(best_agents, 2)
-            child = GeneticDinoAgent.crossover_blend(parent1, parent2)
+            parent1 = roulette_wheel_selection(scores)
+            parent2 = roulette_wheel_selection(scores)
+            child = GeneticDinoAgent.crossover_unico(parent1, parent2)
             child.mutate(mutation_rate)
             new_population.append(child)
 
@@ -133,10 +150,10 @@ def evaluate_agent_performance(agent, num_trials=10):
 
 
 if __name__ == "__main__":
-    generations = 25  # Increase the number of generations for more learning
+    generations = 50  # Increase the number of generations for more learning
     population_size = 50
-    mutation_rate = 0.1  # Higher mutation rate
-    elitism_size = 5
+    mutation_rate = 1  # Higher mutation rate
+    elitism_size = 4
 
     best_agent = genetic_algorithm(
         generations, population_size, mutation_rate, elitism_size
