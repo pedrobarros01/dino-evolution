@@ -3,11 +3,6 @@ import numpy as np
 from dinogame import ACTION_DOWN, ACTION_FORWARD, ACTION_UP, MultiDinoGame, DinoGame
 import random
 
-import random
-
-import random
-import numpy as np
-
 # Definição do agente com uma rede neural simples
 class NeuralNetworkAgent:
     def __init__(self, input_size, hidden_size):
