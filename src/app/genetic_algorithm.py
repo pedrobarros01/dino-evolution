@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from chrome_trex import ACTION_DOWN, ACTION_FORWARD, ACTION_UP, MultiDinoGame, DinoGame
+from dinogame import ACTION_DOWN, ACTION_FORWARD, ACTION_UP, MultiDinoGame, DinoGame
 import random
 
 import random
