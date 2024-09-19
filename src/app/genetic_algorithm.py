@@ -1,161 +1,136 @@
 import random
+import numpy as np
+from chrome_trex import ACTION_DOWN, ACTION_FORWARD, ACTION_UP, MultiDinoGame, DinoGame
+import random
 
-from chrome_trex import DinoGame, MultiDinoGame
-from genetic_dino_agent import GeneticDinoAgent
+import random
 
+import random
+import numpy as np
 
-def process_game_state(game_state):
-    """
-    Process the game state into a simplified format.
+# Definição do agente com uma rede neural simples
+class NeuralNetworkAgent:
+    def __init__(self, input_size, hidden_size):
+        # Inicializando os pesos da rede neural (1 camada oculta)
+        self.weights_input_hidden = np.random.uniform(-1000, 1000, (input_size, hidden_size))
+        self.weights_hidden_output = np.random.uniform(-1000, 1000, hidden_size)
 
-    There can be up to 02 Cacti and 01 Ptera on the screen at a time.
-    This function returns a list of states with 11 values for each dino:
-    [DY, X_C1, Y_C1, H_C1, X_C2, Y_C2, H_C2, X_P1, Y_P1, H_P1, GS]
+    def relu(self, x):
+        return np.maximum(0, x)
 
-    DY is the dinosaur's position in the Y axis;
-    X1, Y1, H1 is the first obstacle's X, Y positions and height;
-    GS is the game speed.
-    """
-    DY, H, W, GS, D= game_state
+    def get_action(self, state):
+        # Forward pass: entrada -> camada oculta -> saída
+        hidden_layer = self.relu(np.dot(state, self.weights_input_hidden))
+        output = self.relu(np.dot(hidden_layer, self.weights_hidden_output))
+        
+        # Apenas duas ações possíveis: ACTION_UP ou ACTION_DOWN
+        if output > 0:
+            return ACTION_UP
+        else:
+            return ACTION_DOWN
 
-    return [DY, H, W, GS, D]
-
-
-def reward_function(current_score, previous_score, state):
-    # Reward based on score increase and distance traveled
-    DY, X1, GS, Y3, X3 = state
-    score_increase = current_score - previous_score
-    distance = X1
-    if X1 > X3:
-        distance = X3
-    return score_increase + GS * distance
-
+    def mutate(self, mutation_rate=0.05, mutation_intensity=1000):
+        # Mutar os pesos da camada input -> hidden
+        for i in range(self.weights_input_hidden.shape[0]):
+            for j in range(self.weights_input_hidden.shape[1]):
+                if random.random() < mutation_rate:
+                    self.weights_input_hidden[i, j] = random.uniform(-mutation_intensity, mutation_intensity)
+        
+        # Mutar os pesos da camada hidden -> output
+        for i in range(len(self.weights_hidden_output)):
+            if random.random() < mutation_rate:
+                self.weights_hidden_output[i] = random.uniform(-mutation_intensity, mutation_intensity)
 
 def evaluate_agent(agents, game):
     game.reset()
-
+    vivos = [True for _ in agents]
     while not game.game_over:
-        game_state = game.get_state_2()
+        game_state = game.get_state()
         actions = [
-            agent.get_action(process_game_state(game_state[i]))
+            agent.get_action(game_state[i])
             for i, agent in enumerate(agents)
         ]
         game.step(actions)
 
-        # Update distance traveled and score
-        scores = game.get_scores()
-
-
-    agent_with_score = [
-        (score, agent)
-        for score, agent in zip(scores, agents)
-    ]
-
+    scores = game.get_scores()
+    agent_with_score = [(score, agent) for score, agent in zip(scores, agents)]
     return agent_with_score
 
-def tournament_selection(agents_with_scores, tournament_size=3):
-    """
-    Seleção por torneio. Seleciona um grupo aleatório de agentes (tamanho definido pelo parâmetro `tournament_size`)
-    e retorna o agente com a maior pontuação no grupo.
-    """
-    tournament_contestants = random.sample(agents_with_scores, tournament_size)
-    best_agent = max(tournament_contestants, key=lambda x: x[0])  # Seleciona o agente com maior score
-    return best_agent[1]  # Retorna o agente
-
-
-def roulette_wheel_selection(agents_with_scores):
-    """
-    Seleção por roleta. A probabilidade de um agente ser selecionado
-    é proporcional à sua pontuação.
-    """
-    total_score = sum(score for score, _ in agents_with_scores)
-    selection_probs = [score / total_score for score, _ in agents_with_scores]
+def genetic_algorithm(population_size, generations, input_size, hidden_size, game):
+    population = [NeuralNetworkAgent(input_size, hidden_size) for _ in range(population_size)]
     
-    return random.choices(
-        [agent for _, agent in agents_with_scores], 
-        weights=selection_probs, 
-        k=1
-    )[0]
-
-def genetic_algorithm(
-    generations=1, population_size=30, mutation_rate=0.05, elitism_size=2
-):
-    game = MultiDinoGame(fps=0, dino_count=population_size)
-
-    population = [
-        GeneticDinoAgent(activation_function="sigmoid")
-        for _ in range(population_size)
-    ]
-
-    best_global_agent = None
-    best_global_score = float("-inf")
-    best_generation_agent = None
-    best_generation_score = float("-inf")
-
     for generation in range(generations):
-        scores = evaluate_agent(population, game)
-        scores.sort(key=lambda x: x[0], reverse=True)
-
-        # Capture the best agent in this generation
-        best_generation_score = scores[0][0]
-        best_generation_agent = scores[0][1]
-
-        # Update the global best agent if necessary
-        if best_generation_score > best_global_score:
-            best_global_score = best_generation_score
-            best_global_agent = best_generation_agent.clone()
-
-        print(f"Generation {generation + 1}: Best Score = {best_generation_score}")
-
-        # Selection for the next generation
-        best_agents = [agent for _, agent in scores[:elitism_size]]
-        new_population = best_agents.copy()
-        new_population.append(best_global_agent)
-
+        # Avaliar agentes
+        agents_with_scores = evaluate_agent(population, game)
+        agents_with_scores.sort(reverse=True, key=lambda x: x[0])  # Ordena pela pontuação
+        
+        # Selecionar o melhor agente
+        best_agent = agents_with_scores[0][1]
+        best_score = agents_with_scores[0][0]
+        if best_score > 10000:
+            print(f"Geração {generation}: Melhor pontuação = {best_score}")
+            return best_agent
+        # Clonar o melhor agente sem mutação
+        new_population = [best_agent]  # Melhor agente direto na nova geração
+        
+        # Gerar nova população mutando o resto da população
         while len(new_population) < population_size:
-            parent1 = roulette_wheel_selection(scores)
-            parent2 = roulette_wheel_selection(scores)
-            child = GeneticDinoAgent.crossover_unico(parent1, parent2)
-            child.mutate(mutation_rate)
-            new_population.append(child)
+            agent_copy = NeuralNetworkAgent(input_size, hidden_size)  # Novo agente
+            agent_copy.weights_input_hidden = best_agent.weights_input_hidden.copy()  # Copiar pesos
+            agent_copy.weights_hidden_output = best_agent.weights_hidden_output.copy()  # Copiar pesos
+            agent_copy.mutate(mutation_rate=0.4)  # Aplica mutação leve
+            new_population.append(agent_copy)
 
+        # Nova população inclui o melhor agente clonado + agentes mutados
         population = new_population
 
-    print(f"Best global agent's final score: {best_global_score}")
-    game.close()
+        # Exibir progresso
+        print(f"Geração {generation}: Melhor pontuação = {best_score}")
 
-    return best_global_agent
+    # Retornar o melhor agente
+    return max(population, key=lambda agent: evaluate_agent([agent], game)[0][0])
 
+# Parâmetros do algoritmo genético
+POPULATION_SIZE = 50
+GENERATIONS = 1000
+INPUT_SIZE = 10   # Tamanho da entrada da rede neural (estado do jogo)
+HIDDEN_SIZE = 5   # Número de neurônios na camada oculta
 
-def evaluate_agent_performance(agent, num_trials=10):
-    total_scores = []
+# Iniciar jogo
+'''game = MultiDinoGame(fps=0, dino_count=POPULATION_SIZE)
+best_agent = genetic_algorithm(POPULATION_SIZE, GENERATIONS, INPUT_SIZE, HIDDEN_SIZE, game)
+file = open('melhor_dino.txt', 'w+')
+file.write(f'{best_agent.weights_input_hidden=}\n')
+file.write(f'{best_agent.weights_hidden_output=}\n')
+file.close()'''
+game = DinoGame(fps=240)
+melhor_agente = NeuralNetworkAgent(INPUT_SIZE, HIDDEN_SIZE)
+melhor_agente.weights_input_hidden =   np.array([[ 800.99227089, -480.48063939, -301.2534357 , -196.46536498,
+        -743.09150888],
+       [ 960.52639824,  171.58194787, -183.25082742,  -79.47714778,
+        -703.96205886],
+       [  55.66500212, -904.74403859,  977.0442675 ,  442.07062394,
+        -767.35275156],
+       [-716.82480082,  -66.64107161,  630.6242964 , -770.78175814,
+        -604.12623559],
+       [ 132.99169764,  204.99824639,  689.51118639, -998.88609201,
+         272.33229074],
+       [-577.96391641, -974.58688859,  198.7438941 , -597.20657665,
+        -184.1173736 ],
+       [ 885.94358581, -566.66038815,  196.79556628, -683.92669424,
+         882.00690058],
+       [ 224.10414014,   45.33285731,  121.03031629,  -70.23585472,
+        -125.29485757],
+       [ 722.54682639, -421.63810415, -185.24726454,  701.27940819,
+         575.94632705],
+       [-128.19590182,  914.84045664,  -98.24447554,  222.78941436,
+         296.99801165]])
+melhor_agente.weights_hidden_output = np.array([-939.90476056,  -89.59455454,  282.4566539 , -757.53241987,
+        552.09734337])
+while not game.game_over:
+    game_state = game.get_state()
+    action = melhor_agente.get_action(game_state)
+    game.step(action)
 
-    for _ in range(num_trials):
-        game = DinoGame(fps=0)
-        game.reset()
-
-        while not game.game_over:
-            game_state = game.get_state()
-            processed_state = process_game_state(game_state)
-            action = agent.get_action(processed_state)
-            game.step(action)
-
-        scores = game.get_score()
-        game.close()
-        total_scores.append(scores)
-
-    average_score = sum(total_scores) / len(total_scores)
-    print(f"Pontuação média do melhor agente global: {average_score}")
-    return average_score
-
-
-if __name__ == "__main__":
-    generations = 50  # Increase the number of generations for more learning
-    population_size = 50
-    mutation_rate = 1  # Higher mutation rate
-    elitism_size = 4
-
-    best_agent = genetic_algorithm(
-        generations, population_size, mutation_rate, elitism_size
-    )
-    evaluate_agent_performance(best_agent)
+scores = game.get_scores()
+print(f'{scores=}')
