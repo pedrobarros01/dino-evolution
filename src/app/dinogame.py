@@ -88,6 +88,8 @@ def extract_digits(number):
         for i in range(len(digits), 5):
             digits.append(0)
         digits.reverse()
+        if len(digits) > 5:
+            digits.remove(0)
         return digits
 
 
@@ -442,8 +444,10 @@ class MultiDinoGame:
         DY: Distance in Y of the dinosaur.
         X1, Y1: Distance in X and Y from the first closest obstacle.
         H1: Height of the first closest obstacle.
+        W1: Width of the first closest obstacle.
         X2, Y2: Distance in X and Y from the second closest obstacle.
         H2: Height of the second closest obstacle.
+        W2: Width of the second closest obstacle
         GS: Game speed.
         """
 

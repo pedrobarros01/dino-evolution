@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 numpy = "^2.1.1"
-chrome-trex = {git = "https://github.com/ArielMAJ/chrome-trex-rush", rev = "fix/multi-dino-game"}
+chrome-trex = {git = "https://github.com/ArielMAJ/chrome-trex-rush", rev = "675c14aec93e7567ede9e3f5d78fbe65fd62dc99"}
 
 [tool.poetry.group.dev.dependencies]
 notebook = "^7.1.2"

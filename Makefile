@@ -11,20 +11,20 @@ install: ## Install Python requirements.
 	poetry run pre-commit install
 
 .PHONY: best
-run: ## Run the project.
+best: ## Run the project.
 	poetry run python src/app/best_agent.py
 
 .PHONY: train
-run: ## Run the project.
+train: ## Run the project.
 	poetry run python src/app/training.py
 
 .PHONY: dino
 dino: ## Run first example script.
 	poetry run python src/app/aoba.py
 
-.PHONY: run-env-var-usage-example-script
-run-env-var-example-script: ## Run environment variables usage example script.
-	poetry run python src/scripts/example_env.py
+.PHONY: teste
+teste: ## Run environment variables usage example script.
+	poetry run python src/scripts/teste.py
 
 .PHONY: notebook
 notebook: ## Start Jupyter Notebook.
