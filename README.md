@@ -197,10 +197,12 @@ Para obter o best agente ao fim do treinamento, os pesos são salvos em um arqui
 `Observação: Foi necessário alterar o codigo base do jogo do dino da biblioteca chrome_trex e realocar nesse repositório`
 ## Treino Dino
 Segue o video do treino do dino
+
 https://github.com/user-attachments/assets/9bd04cf6-f98b-4d41-9b6f-d035536bb349
 
 ## Melhor Dino
 Segue o video do melhor dino achado
+
 https://github.com/user-attachments/assets/e7658e13-bc15-4ba7-91a7-18c85c989cc5
 
 ## Apresentação:
