@@ -207,7 +207,8 @@ https://github.com/user-attachments/assets/e7658e13-bc15-4ba7-91a7-18c85c989cc5
 
 ## Apresentação:
 Segue o video da apresentação
-link postado daqui a pouco
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/mDHEBJDGGRQ/0.jpg)](https://www.youtube.com/watch?v=mDHEBJDGGRQ)
 
 
 
