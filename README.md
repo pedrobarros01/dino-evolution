@@ -13,6 +13,7 @@ O objetivo do algoritmo genético é evoluir uma população de agentes para jog
 5. **Mutação:** Introduzir alterações aleatórias nos genes dos descendentes para manter a diversidade genética.
 6. **Repetição:** Continuar o processo por um número específico de gerações para evoluir melhores agentes.
 
+
 ## Componentes do Código de Cada Solução
 
 ## Perceptron + Algoritmo Genético (Primeira solução)
@@ -192,3 +193,5 @@ Para obter o best agente ao fim do treinamento, os pesos são salvos em um arqui
 - Executa um loop até que o jogo termine, onde o agente toma ações baseadas no estado atual.
 - Se a pontuação atingir 30.000, o jogo é encerrado.
 - Exibe a pontuação final após o término do jogo.
+
+`Observação: Foi necessário alterar o codigo base do jogo do dino da biblioteca chrome_trex e realocar nesse repositório`
