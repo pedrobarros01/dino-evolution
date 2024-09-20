@@ -10,9 +10,13 @@ install: ## Install Python requirements.
 	poetry install --no-root
 	poetry run pre-commit install
 
-.PHONY: run
+.PHONY: best
 run: ## Run the project.
-	poetry run python src/app/genetic_algorithm.py
+	poetry run python src/app/best_agent.py
+
+.PHONY: train
+run: ## Run the project.
+	poetry run python src/app/training.py
 
 .PHONY: dino
 dino: ## Run first example script.
