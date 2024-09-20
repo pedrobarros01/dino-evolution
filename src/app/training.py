@@ -1,7 +1,7 @@
 from dinogame import  MultiDinoGame
 import json
 from NeuralNetworkAgent import NeuralNetworkAgent
-
+import argparse
 
 
 def evaluate_agent(agents, game):
@@ -54,12 +54,17 @@ def genetic_algorithm(population_size, generations, input_size, hidden_size, gam
     # Retornar o melhor agente
     return max(population, key=lambda agent: evaluate_agent([agent], game)[0][0])
 
+
+
+parser = argparse.ArgumentParser(description="Treino dos dinos")
+parser.add_argument('population', type=int, help="Passa a quantidade da população a ser treinada")
+parser.add_argument('generation', type=int, help="Passa a quantidade da gerações a ser treinada")
+args = parser.parse_args()
 # Parâmetros do algoritmo genético
-POPULATION_SIZE = 100
-GENERATIONS = 1000
+POPULATION_SIZE = args.population
+GENERATIONS = args.generation
 INPUT_SIZE = 10   # Tamanho da entrada da rede neural (estado do jogo)
 HIDDEN_SIZE = 5   # Número de neurônios na camada oculta
-
 # Iniciar jogo
 game = MultiDinoGame(fps=0, dino_count=POPULATION_SIZE)
 best_agent = genetic_algorithm(POPULATION_SIZE, GENERATIONS, INPUT_SIZE, HIDDEN_SIZE, game)

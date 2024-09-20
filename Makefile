@@ -16,7 +16,7 @@ best: ## Run the project.
 
 .PHONY: train
 train: ## Run the project.
-	poetry run python src/app/training.py
+	poetry run python src/app/training.py 100 1000
 
 .PHONY: teste
 teste: ## Run environment variables usage example script.

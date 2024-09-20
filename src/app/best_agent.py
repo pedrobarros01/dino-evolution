@@ -22,8 +22,7 @@ while not game.game_over:
     action = melhor_agente.get_action(game_state)
     game.step(action)
     scores = game.get_score()
-    if scores > 30000:
-        game.game_over = True
+    
 
 scores = game.get_scores()
 print(f"{scores=}")
