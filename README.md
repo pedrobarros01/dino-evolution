@@ -1,73 +1,10 @@
-# python-repository-template
-
-A Python repository template to facilitate getting your projects started and organized.
-
-# If you use Windows, use chocolatey for installing things
-
-- [chocolatey installation guide](https://chocolatey.org/install)
-
-# Use pyenv for Python version management
-
-- [pyenv installation guide](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation)
-
-```bash
-curl https://pyenv.run | bash
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.profile
-echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.profile
-echo 'eval "$(pyenv init -)"' >> ~/.profile
-exit
-```
-
-In another shell:
-
-```bash
-pyenv update
-pyenv install 3.9.13
-pyenv rehash
-pyenv global 3.9.13
-exit
-```
-
-# Use `make` for simplifing commands and making it explicit how to run your code
-
-- [make documentation](https://www.gnu.org/software/make/manual/make.html)
-
-# Use poetry for managing Python dependencies
-
-[Poetry](https://python-poetry.org/docs/basic-usage/) is a tool for dependency management and packaging in Python. It allows you to declare the libraries your project depends on and it will manage (install/update) them for you. Poetry offers a lockfile to ensure repeatable installs, and can build your project for distribution.
-
-## Basic commands:
-
-- Add new dependency: `poetry add <package>`
-- Install dependencies: `poetry install`
-- Update dependencies: `poetry update`
-- Remove dependencies: `poetry remove <package>`
-- Run a command in the virtual environment: `poetry run <command>`
-- Run python in the virtual environment: `poetry run python <command>`
-
-# Make sure to use the Makefile to facilitate the usage of your repository
-
-Anyone that clones your repository should be able to relatively easily run your code with just a few commands. The Makefile should contain the following commands:
-
-```bash
-make install
-make run
-```
-
-# Use pre-commit for running checks before committing
-
-[pre-commit](https://pre-commit.com/) is a framework for managing and maintaining multi-language pre-commit hooks. It is a client-side hook manager that can be used to automate checks before committing code. It is recommended to use pre-commit to ensure code formatting, among other things.
-
 # Algoritmo Genético para Agente do Jogo Dino
 
-Este README fornece uma visão geral da implementação do algoritmo genético para treinar um agente do jogo Dino. Ele cobre o fluxo geral, métodos de seleção, mutação e as funções de ativação usadas no código.
+Este README fornece uma visão geral da implementação do algoritmo genético para treinar um agente do jogo Dino. Ele cobre o fluxo geral, abordagens utilizadas para gerar soluções, métodos de seleção, mutação e as funções de ativação usadas no código.
 
 ## Visão Geral
 
-O objetivo do algoritmo genético é evoluir uma população de agentes para jogar o jogo Dino de forma eficaz. Os agentes utilizam Perceptron para decidir as ações com base no estado do jogo. O algoritmo envolve os seguintes passos:
+O objetivo do algoritmo genético é evoluir uma população de agentes para jogar o jogo Dino de forma eficaz. Para os agentes foram utilizados Perceptrons e futuramente na solução final Redes Neurais para decidir as ações com base no estado do jogo. Algoritmos genéticos comumente envolvem os seguintes passos:
 
 1. **Inicialização:** Criação de uma população de agentes com pesos e viéses aleatórios.
 2. **Avaliação:** Testar o desempenho de cada agente no jogo Dino e atribuir uma pontuação de aptidão com base no desempenho.
@@ -76,7 +13,9 @@ O objetivo do algoritmo genético é evoluir uma população de agentes para jog
 5. **Mutação:** Introduzir alterações aleatórias nos genes dos descendentes para manter a diversidade genética.
 6. **Repetição:** Continuar o processo por um número específico de gerações para evoluir melhores agentes.
 
-## Componentes do Código
+## Componentes do Código de Cada Solução
+
+## Perceptron + Algoritmo Genético (Primeira solução)
 
 ### 1. `process_game_state(game_state)`
 
@@ -98,17 +37,51 @@ A função principal para rodar o algoritmo genético. Inicializa uma populaçã
 
 Testa o desempenho de um único agente em múltiplas tentativas. Retorna a pontuação média do agente, fornecendo uma estimativa de seu desempenho geral.
 
-## Detalhes do Algoritmo Genético
+## Rede Neural + Algoritmo Genético (Segunda solução)
+
+### Classe NeuralNetworkAgent
+
+Representa o agente com uma rede neural de uma camada oculta.
+
+- **init(self, input_size, hidden_size)**: Inicializa os pesos da rede neural.
+
+  - input_size: Tamanho da entrada da rede (estado do jogo).
+  - hidden_size: Número de neurônios na camada oculta.
+
+- **relu(self, x)**: Função de ativação ReLU. Retorna o valor máximo entre 0 e x, introduzindo não linearidade na rede.
+
+- **get_action(self, state)**:
+
+  - Realiza uma passagem direta pela rede neural (input -> camada oculta -> saída).
+  - Retorna ACTION_UP se a saída for maior que 0, e ACTION_DOWN caso contrário, controlando as ações do agente.
+
+- **mutate(self, mutation_rate=0.05, mutation_intensity=1000)**:
+
+  - Aplica mutações aleatórias nos pesos da rede.
+  - Para cada peso na camada de entrada para a camada oculta, se um número aleatório for menor que mutation_rate, o peso é alterado.
+  - O mesmo processo é aplicado para os pesos da camada oculta para a saída.
+
+### Função evaluate_agent(agents, game)
+
+Avalia uma lista de agentes no jogo.
+
+- Reseta o estado do jogo.
+- Executa um loop enquanto o jogo não estiver encerrado, obtendo o estado atual do jogo e as ações dos agentes.
+- Retorna as pontuações de cada agente, associadas a seus respectivos objetos.
+
+## Detalhes das soluções
 
 ### Seleção
 
 A seleção é o processo de escolher os melhores agentes para serem pais da próxima geração:
 
-- **Elitismo:** Um número de agentes de topo (definido por `elitism_size`) é diretamente transferido para a próxima geração e para gerar descendentes. Isso garante que as melhores soluções sejam preservadas.
+- **Primeira solução - Elitismo:** Um número de agentes de topo (definido por `elitism_size`) é diretamente transferido para a próxima geração e para gerar descendentes. Isso garante que as melhores soluções sejam preservadas.
+
+- **Segunda solução - CLone:** O melhor indivíduo da solução passada é clonado e todos os indivíduo da geração seguinte se tornam réplicas dele.
 
 ### Crossover
 
-O crossover combina o material genético (pesos e viéses) de dois agentes pais para criar descendentes:
+O crossover combina o material genético (pesos e viéses) de dois agentes pais para criar descendentes, esta abordagem foi utilizada __apenas na primeira solução__, após diversos testes e com diferentes crossover (mostrados abaixo) foi concluído que para este cenário não seria proveitoso:
 
 - **Crossover Uniforme:** Seleciona aleatoriamente genes de qualquer um dos pais para criar o descendente. Cada gene no descendente tem a mesma probabilidade de vir de qualquer um dos pais.
 
@@ -165,7 +138,7 @@ O crossover combina o material genético (pesos e viéses) de dois agentes pais 
 
 ### Funções de Ativação
 
-As funções de ativação são usadas para calcular a saída do perceptron e pode introduzir não-linearidades nestas soluções:
+As funções de ativação são usadas para calcular a saída do perceptron e pode introduzir não-linearidades nestas soluções, foram testadas diferentes funções de ativação ao longo do desenvolvimento do projeto:
 
 - **ReLU (Rectified Linear Unit):** Transforma valores negativos em zero e mantém valores positivos. É simples e eficiente, mas pode sofrer do problema de "morte de neurônios" se muitos valores forem negativos.
 
@@ -210,22 +183,12 @@ As funções de ativação são usadas para calcular a saída do perceptron e po
     return np.where(x > 0, x, alpha * (np.exp(x) - 1))
   ```
 
-## Execução do Algoritmo
+## Best Agent
 
-Para executar o algoritmo genético os parâmetros ajustáveis são:
+Para obter o best agente ao fim do treinamento, os pesos são salvos em um arquivo. Futuramente para testes com o melhor agente obtido as informações são carregadas deste arquivo e carregadas novamente utilizando a classe NeuralNetworkAgent.
 
-- **generations:** Número de gerações para evolução.
-- **population_size:** Número de agentes em cada geração.
-- **mutation_rate:** Probabilidade de mutação ocorrer em um agente.
-- **elitism_size:** Número de agentes de topo a gerarem descendentes e serem preservados para a próxima geração.
-
-  ```python
-  if __name__ == "__main__":
-    generations = 25
-    population_size = 50
-    mutation_rate = 0.1
-    elitism_size = 5
-
-    best_agent = genetic_algorithm(generations, population_size, mutation_rate, elitism_size)
-    evaluate_agent_performance(best_agent)
-  ```
+- Cria uma instância de DinoGame para iniciar o jogo.
+- Carrega os pesos do melhor agente do arquivo JSON (best_agent.json).
+- Executa um loop até que o jogo termine, onde o agente toma ações baseadas no estado atual.
+- Se a pontuação atingir 30.000, o jogo é encerrado.
+- Exibe a pontuação final após o término do jogo.
