@@ -1,4 +1,4 @@
-from chrome_trex import  MultiDinoGame
+from dinogame import  MultiDinoGame
 import json
 from NeuralNetworkAgent import NeuralNetworkAgent
 

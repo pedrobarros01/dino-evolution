@@ -420,8 +420,11 @@ class MultiDinoGame:
         gamespeed_text = self.font.render(
             f"Game Speed: {self.gamespeed}", True, (0, 0, 0)
         )
-        self.screen.blit(gamespeed_text, (10, 10))  # Posição (10, 10) na tela
-
+        dinos_vivos_text = self.font.render(
+            f"Dinos Vivos: {len(self.alive_players)}", True, (0,0,0)
+        )
+        self.screen.blit(gamespeed_text, (10, 10))  
+        self.screen.blit(dinos_vivos_text, (10, 30))
         pygame.display.update()
         self.clock.tick(self.fps)
         if len(self.alive_players) == 0:
