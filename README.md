@@ -210,6 +210,14 @@ Segue o video da apresentação
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/mDHEBJDGGRQ/0.jpg)](https://www.youtube.com/watch?v=mDHEBJDGGRQ)
 
+## Execução do código em makefile
+1. Rodar o `make install`
+2. Rodar o `make train` para fazer um treinamento de 100 dinos em 1000 gerações
+3. Rodar o `make best` para rodar o melhor agente
+
+## Execução via python
+- O arquivo training tem 2 argumentos(population e generation) que permite voce escolher a quantidade da população e geração do treino
+
 
 
 
